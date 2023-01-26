@@ -1,70 +1,63 @@
 
-# import timeit
-# code = """
 class RSA:
-    def encrypt(self, message, modulo, exponent):
-        return self.powMod(self.convertToInt(message), exponent, modulo)
+    def __init__(self, p, q, e):
+        self.p = p
+        self.q = q
+        self.e = e
 
-    def decrypt(self, ciphertext, p, q, exponent):
-        phi = (p - 1) * (q - 1)
-        d = self.invertModulo(exponent, phi)
-        return self.convertToStr(self.powMod(ciphertext, d, p * q))
+        self.n = p * q
+        self.phi = (p-1) * (q-1)
+        self.d = self.invert_modulo(self.e, self.phi)
 
-    def powMod(self, a, n, mod): #Calculates a^n mod 'mod'
+    def encrypt(self, message):
+        exponent = self.e
+        modulo = self.n
+        
+        return self.pow_mod(self.convert_to_int(message), exponent, modulo)
+
+    def decrypt(self, ciphertext):
+        exponent = self.d
+        modulo = self.n
+
+        return self.convert_to_str(self.pow_mod(ciphertext, exponent, modulo))
+
+    def pow_mod(self, a, n, modulo):  # Calculates a^n mod 'modulo'
         if n == 0:
-            return 1 % mod
+            return 1 % modulo
         elif n == 1:
-            return a % mod
+            return a % modulo
         else:
-            b = self.powMod(a, n // 2, mod)
-            b = b * b % mod
+            b = self.pow_mod(a, n // 2, modulo)
+            b = b * b % modulo
             if n % 2 == 0:
                 return b
             else:
-                return b * a % mod
+                return b * a % modulo
 
-    def extendedEuclid(self, a, b): #Calculates coefficients of a and b as xa + yb = gcd(a, b)
+    def extended_euclid(self, a, b):  # Calculates coefficients of a and b as xa + yb = gcd(a, b)
         if b == 0:
-            return (1, 0)
-        (x, y) = self.extendedEuclid(b, a % b)
+            return 1, 0
+        (x, y) = self.extended_euclid(b, a % b)
         k = a // b
-        return (y, x - k * y)
+        return y, x - k * y
 
-    def invertModulo(self, a, n): #Calculates invertion of a
-        (b, x) = self.extendedEuclid(a, n)
+    def invert_modulo(self, a, n):  # Calculates inversion of a
+        (b, x) = self.extended_euclid(a, n)
         if b < 0:
             b = (b % n + n) % n
         return b
 
-    def convertToInt(self, message_str):
+    @staticmethod
+    def convert_to_int(message_str):
         res = 0
         for i in range(len(message_str)):
             res = res * 256 + ord(message_str[i])
         return res
 
-    def convertToStr(self, n):
+    @staticmethod
+    def convert_to_str(n):
         res = ""
         while n > 0:
             res += chr(n % 256)
             n //= 256
         return res[::-1]
-
-p = 779849711281
-q = 748173698927
-e = 1018651
-n = p * q
-message = 'Hello'
-
-rsa = RSA()
-
-print(n)
-ciphertext = rsa.encrypt(message, n, e)
-print(ciphertext)
-
-plaintext = rsa.decrypt(ciphertext, p, q, e)
-print(plaintext)
-# """
-
-# execution_time = timeit.timeit(code, number=1)
-# print(execution_time, 's')
-
